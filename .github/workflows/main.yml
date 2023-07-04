@@ -29,7 +29,7 @@ jobs:
           sudo sh get-docker.sh
 
       - name: Log in to GitHub Artifact Registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login "${{ env.REGISTRY }}" -u dev-swapnildixit4161 --password-stdin
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login "ghcr.io/dev-swapnildixit4161/my-app" -u dev-swapnildixit4161 --password-stdin
 
       - name: Build and push Docker image
         run: |
