@@ -47,9 +47,6 @@ jobs:
 #          az aks get-credentials --name ${{ env.AKS_CLUSTER }} --resource-group azure-demo --overwrite-existing
 
       - name: Apply Kubernetes manifest
-        uses: azure/k8s-set-context@v1
-        with:
-          kubeconfig: demo
         run: |
           kubectl apply -f path/manifests/deployment.yml --namespace ${{ env.AKS_NAMESPACE }}
           kubectl apply -f path/manifests/service.yml --namespace ${{ env.AKS_NAMESPACE }}
