@@ -7,8 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  REGISTRY: ghcr.io/dev-swapnildixit4161/my-app
-  IMAGE_NAME: my-app
+  IMAGE_NAME: ghcr.io/dev-swapnildixit4161/myapp/myimage
   AKS_CLUSTER: demo
   AKS_NAMESPACE: default
 
