@@ -13,11 +13,11 @@ env:
   AKS_NAMESPACE: default
 
 jobs:
-  build-and-deploy:
+  build-and-push-image:
     runs-on: ubuntu-latest
     permissions:
-    contents: read
-    packages: write
+      contents: read
+      packages: write
 
     steps:
       - name: Checkout code
