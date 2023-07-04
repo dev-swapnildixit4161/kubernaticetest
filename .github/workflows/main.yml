@@ -48,5 +48,5 @@ jobs:
 
       - name: Apply Kubernetes manifest
         run: |
-          kubectl apply -f path/to/manifests/deployment.yaml --namespace ${{ env.AKS_NAMESPACE }}
-          kubectl apply -f path/to/manifests/service.yaml --namespace ${{ env.AKS_NAMESPACE }}
+          kubectl apply -f path/to/manifests/deployment.yml --namespace ${{ env.AKS_NAMESPACE }}
+          kubectl apply -f path/to/manifests/service.yml --namespace ${{ env.AKS_NAMESPACE }}
