@@ -1,70 +1,63 @@
-# This workflow will build a docker container, publish it to Azure Container Registry, and deploy it to Azure Kubernetes Service.
-#
-# To configure this workflow:
-#
-# 1. Set up the following secrets in your workspace:
-#     a. REGISTRY_USERNAME with ACR username
-#     b. REGISTRY_PASSWORD with ACR Password
-#     c. AZURE_CREDENTIALS with the output of `az ad sp create-for-rbac --sdk-auth`
-#
-# 2. Change the values for the REGISTRY_NAME, CLUSTER_NAME, CLUSTER_RESOURCE_GROUP and NAMESPACE environment variables (below).
+name: Build and Deploy to AKS
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
-# Environment variables available to all jobs and steps in this workflow
 env:
-  REGISTRY_NAME: azuresampleproject
-  CLUSTER_NAME: demo
-  CLUSTER_RESOURCE_GROUP: azure-demo
-  NAMESPACE: default
+  REGISTRY: ghcr.io/dev-swapnildixit4161/my-app
+  IMAGE_NAME: my-app
+  AKS_CLUSTER: demo
+  AKS_NAMESPACE: default
 
 jobs:
-  build:
+  build-and-push-image:
     runs-on: ubuntu-latest
-    environment: dev
+    permissions:
+      contents: read
+      packages: write
+
     steps:
-      - uses: actions/checkout@master
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      # Connect to Azure Container registry (ACR)
-      - uses: azure/docker-login@v1
-        with:
-          login-server: azuresampleproject.azurecr.io
-          username: azuresampleproject
-          password: K7+B8kOQpL5TQEbiutr44P3p/qFQIOu2CDAl3Kj98e+ACRDO4WOA
+      - name: Install Docker
+        run: |
+          curl -fsSL https://get.docker.com -o get-docker.sh
+          sudo sh get-docker.sh
 
-      # Container build and push to a Azure Container registry (ACR)
-      - run: |
-          docker build . -t azuresampleproject.azurecr.io/myimage:${{ github.sha }}
-          docker push azuresampleproject.azurecr.io/myimage:${{ github.sha }}
+      - name: Log in to GitHub Artifact Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login "${{ env.REGISTRY }}" -u dev-swapnildixit4161 --password-stdin
 
-      # Set the target Azure Kubernetes Service (AKS) cluster.
-      - uses: azure/aks-set-context@v1
+      - name: Build and push Docker image
+        run: |
+          docker build -t "${{ env.REGISTRY }}:${{ github.sha }}" .
+          docker push "${{ env.REGISTRY }}:${{ github.sha }}"
+          
+      - name: Create image pull secret
+        run: |
+          kubectl create secret docker-registry my-registry-secret --docker-server="${{ env.REGISTRY }}" --docker-username=dev-swapnildixit4161 --docker-password="${{ secrets.GITHUB_TOKEN }}" --namespace=${{ env.AKS_NAMESPACE }}
+
+      - name: Deploy to AKS
+        uses: azure/aks-set-context@v1
         with:
           creds: '${{ secrets.AZURE_CREDENTIALS }}'
           cluster-name: demo
           resource-group: azure-demo
+      #        run: |
+      #          az aks set-context --name ${{ env.AKS_CLUSTER }} --resource-group azure-demo
+      #          az aks get-credentials --name ${{ env.AKS_CLUSTER }} --resource-group azure-demo --overwrite-existing
 
-      # Create namespace if doesn't exist
-      - run: |
-          kubectl create namespace ${{ env.NAMESPACE }} --dry-run -o json | kubectl apply -f -
 
-      # Create imagepullsecret for Azure Container registry (ACR)
-      - uses: azure/k8s-create-secret@v1
-        with:
-          container-registry-url: azuresampleproject.azurecr.io
-          container-registry-username: azuresampleproject
-          container-registry-password: K7+B8kOQpL5TQEbiutr44P3p/qFQIOu2CDAl3Kj98e+ACRDO4WOA
-          secret-name: azuresampleproject-registry-connection
-          namespace: ${{ env.NAMESPACE }}
+      - name: List Manifests Directory
+        run: ls manifests
 
-      # Deploy app to AKS
-      - uses: azure/k8s-deploy@v1
-        with:
-          manifests: |
-            manifests/deployment.yml
-            manifests/service.yml
-          images: |
-            azuresampleproject.azurecr.io/myimage:${{ github.sha }}
-          imagepullsecrets: |
-            azuresampleproject-registry-connection
-          namespace: ${{ env.NAMESPACE }}
+      - name: Apply Kubernetes manifest
+        run: |
+          kubectl apply -f manifests/deployment.yml --namespace ${{ env.AKS_NAMESPACE }}
+          kubectl apply -f manifests/service.yml --namespace ${{ env.AKS_NAMESPACE }}
+      
+      
+          

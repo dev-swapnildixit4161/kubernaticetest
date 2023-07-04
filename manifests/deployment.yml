@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: springboot-app
-          image: azuresampleproject.azurecr.io/myimage:${{ github.sha }}
+          image: ghcr.io/dev-swapnildixit4161/my-app:${{ github.sha }}
           ports:
             - containerPort: 8080
