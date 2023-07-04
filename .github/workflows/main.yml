@@ -1,12 +1,16 @@
 name: Build and Deploy to AKS
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 env:
-  REGISTRY: ghcr.io/dev-swapnildixit4161/my-app:latest # Replace with your GitHub Artifact Registry URL
-  IMAGE_NAME: my-app  # Replace with your Docker image name
-  AKS_CLUSTER: demo  # Replace with your AKS cluster name
-  AKS_NAMESPACE: default  # Replace with your AKS namespace
+  REGISTRY: ghcr.io/dev-swapnildixit4161/my-app:latest
+  IMAGE_NAME: my-app
+  AKS_CLUSTER: demo
+  AKS_NAMESPACE: default
 
 jobs:
   build-and-deploy:
@@ -28,16 +32,11 @@ jobs:
           docker push "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
 
       - name: Deploy to AKS
-        uses: azure/aks-set-context@v1
-        with:
-          creds: '${{ secrets.AZURE_CREDENTIALS }}'
-          cluster-name: demo
-          resource-group: azure-demo  # Replace with your AKS resource group name
+        run: |
+          az aks set-context --name ${{ env.AKS_CLUSTER }} --resource-group azure-demo
+          az aks get-credentials --name ${{ env.AKS_CLUSTER }} --resource-group azure-demo --overwrite-existing
 
       - name: Apply Kubernetes manifest
-        uses: azure/k8s-set-context@v1
-        with:
-          kubeconfig: demo  # AKS cluster context
         run: |
           kubectl apply -f path/to/manifests/deployment.yaml --namespace ${{ env.AKS_NAMESPACE }}
           kubectl apply -f path/to/manifests/service.yaml --namespace ${{ env.AKS_NAMESPACE }}
