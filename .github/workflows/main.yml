@@ -45,10 +45,11 @@ jobs:
           cluster-name: demo
           resource-group: azure-demo
 
+      - name: List Manifests Directory
+        run: ls manifests
 
-
-      - name: Deploy to AKS
+      - name: Apply Kubernetes manifest
         run: |
-          kubectl apply -f deployment.yml
-          kubectl apply -f service.yml
+          kubectl apply -f manifests/deployment.yml --namespace ${{ env.AKS_NAMESPACE }}
+          kubectl apply -f manifests/service.yml --namespace ${{ env.AKS_NAMESPACE }}
           
