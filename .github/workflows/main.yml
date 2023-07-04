@@ -28,13 +28,9 @@ jobs:
           curl -fsSL https://get.docker.com -o get-docker.sh
           sudo sh get-docker.sh
       - name: Build and push Docker image
-        uses: docker/build-push-action@v2
-        with:
-            context: .
-            push: true
-            tags: ghcr.io/dev-swapnildixit4161/my-app:${{ github.sha }}
-        env:
-            CR_PAT: ${{ secrets.ACCESS_TOKEN }}
+        run: |
+          docker build -t "ghcr.io/dev-swapnildixit4161/my-app:${{ github.sha }}" .
+          docker push "ghcr.io/dev-swapnildixit4161/my-app:${{ github.sha }}"
 
 
 
