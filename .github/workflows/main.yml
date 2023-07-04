@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  REGISTRY: ghcr.io/dev-swapnildixit4161/my-app:latest
+  REGISTRY: ghcr.io/dev-swapnildixit4161/my-app:${{ github.sha }}
   IMAGE_NAME: my-app
   AKS_CLUSTER: demo
   AKS_NAMESPACE: default
