@@ -37,9 +37,14 @@ jobs:
           docker push "${{ env.REGISTRY }}:${{ github.sha }}"
 
       - name: Deploy to AKS
-        run: |
-          az aks set-context --name ${{ env.AKS_CLUSTER }} --resource-group azure-demo
-          az aks get-credentials --name ${{ env.AKS_CLUSTER }} --resource-group azure-demo --overwrite-existing
+        uses: azure/aks-set-context@v1
+        with:
+          creds: '${{ secrets.AZURE_CREDENTIALS }}'
+          cluster-name: demo
+          resource-group: azure-demo
+#        run: |
+#          az aks set-context --name ${{ env.AKS_CLUSTER }} --resource-group azure-demo
+#          az aks get-credentials --name ${{ env.AKS_CLUSTER }} --resource-group azure-demo --overwrite-existing
 
       - name: Apply Kubernetes manifest
         run: |
