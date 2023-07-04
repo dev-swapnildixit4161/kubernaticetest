@@ -34,7 +34,7 @@ jobs:
             push: true
             tags: ghcr.io/dev-swapnildixit4161/my-app:${{ github.sha }}
         env:
-            CR_PAT: ${{ secrets.GITHUB_TOKEN }}
+            CR_PAT: ${{ secrets.ACCESS_TOKEN }}
 
 
 
