@@ -27,37 +27,28 @@ jobs:
         run: |
           curl -fsSL https://get.docker.com -o get-docker.sh
           sudo sh get-docker.sh
-
-      - name: Log in to GitHub Artifact Registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login "${{ env.REGISTRY }}" -u dev-swapnildixit4161 --password-stdin
-
       - name: Build and push Docker image
-        run: |
-          docker build -t "${{ env.REGISTRY }}:${{ github.sha }}" .
-          docker push "${{ env.REGISTRY }}:${{ github.sha }}"
-          
-      - name: Create image pull secret
-        run: |
-          kubectl create secret docker-registry my-registry-secret --docker-server="${{ env.REGISTRY }}" --docker-username=dev-swapnildixit4161 --docker-password="${{ secrets.GITHUB_TOKEN }}" --namespace=${{ env.AKS_NAMESPACE }}
+        uses: docker/build-push-action@v2
+        with:
+            context: .
+            push: true
+            tags: ghcr.io/dev-swapnildixit4161/my-app:${{ github.sha }}
+        env:
+            CR_PAT: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Deploy to AKS
+
+
+      - name: Configure Kubernetes environment
         uses: azure/aks-set-context@v1
         with:
-          creds: '${{ secrets.AZURE_CREDENTIALS }}'
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
           cluster-name: demo
           resource-group: azure-demo
-      #        run: |
-      #          az aks set-context --name ${{ env.AKS_CLUSTER }} --resource-group azure-demo
-      #          az aks get-credentials --name ${{ env.AKS_CLUSTER }} --resource-group azure-demo --overwrite-existing
 
 
-      - name: List Manifests Directory
-        run: ls manifests
 
-      - name: Apply Kubernetes manifest
+      - name: Deploy to AKS
         run: |
-          kubectl apply -f manifests/deployment.yml --namespace ${{ env.AKS_NAMESPACE }}
-          kubectl apply -f manifests/service.yml --namespace ${{ env.AKS_NAMESPACE }}
-      
-      
+          kubectl apply -f deployment.yml
+          kubectl apply -f service.yml
           
