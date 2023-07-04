@@ -62,6 +62,7 @@ jobs:
         with:
           manifests: |
             manifests/deployment.yml
+            manifests/service.yml
           images: |
             azuresampleproject.azurecr.io/myimage:${{ github.sha }}
           imagepullsecrets: |
