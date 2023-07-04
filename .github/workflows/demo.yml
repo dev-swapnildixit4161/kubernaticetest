@@ -1,10 +1,6 @@
 name: Build and Deploy to AKS
 
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+on: [push]
 
 env:
   REGISTRY: ghcr.io/dev-swapnildixit4161/my-app:latest # Replace with your GitHub Artifact Registry URL
